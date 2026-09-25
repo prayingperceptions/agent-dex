@@ -10,6 +10,15 @@ fail-closed.
 
 ---
 
+## Keywords & ecosystem
+
+`#Base` `#x402` `#Coinbase` `#BaseDeFi` `#agentEconomy` `#defi` `#LP` `#DEX` \
+`#pumpdotfun` `#uniswap` `#web3` · built on [Base](https://base.org) (chainId `8453`),
+agents + humans pay/trade over [#x402](https://x402.org) in Base USDC
+(`0x833589…2913`), deployed via the [Coinbase Developer Platform](https://www.coinbase.com/developer-platform).
+
+---
+
 ## The launch split (per token)
 
 | Share | Goes to | Earns how |
