@@ -76,7 +76,17 @@ const server = http.createServer(async (req, res) => {
     if (method === 'POST' && path === '/launch') {
       const resourceUrl = absUrl(req);
       const gate = await gatePayment(req, resourceUrl, process.env);
-      if (gate.paid === false) return send(res, gate.status, gate.body, { 'PAYMENT-REQUIRED': gate.headers?.['PAYMENT-REQUIRED'] || '' });
+      if (gate.paid === false) {
+        // emit the x402 body RAW (gate.body is already a JSON string) + PAYMENT-REQUIRED
+        res.writeHead(gate.status, {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+          'Access-Control-Allow-Headers': 'content-type, x-payment',
+          'PAYMENT-REQUIRED': (gate.headers && gate.headers['PAYMENT-REQUIRED']) || ''
+        });
+        return res.end(gate.body);
+      }
       const body = await readBody(req);
       return send(res, 200, await computeLaunch(body));
     }

@@ -55,6 +55,10 @@ await new Promise(r => setTimeout(r, 1200));
 try {
   const paid = await fetch("http://127.0.0.1:3500/launch", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ name: "X", symbol: "X", supply: 1 }) });
   check("live: /launch returns 402 without payment", paid.status === 402);
+  // body must be a single-level JSON object (NOT double-encoded as a string)
+  const bodyTxt = await paid.text();
+  let bodyObj = null; try { bodyObj = JSON.parse(bodyTxt); } catch {}
+  check("live: 402 body is a real JSON object (not double-encoded)", !!bodyObj && typeof bodyObj === "object" && bodyObj.x402Version === 2, bodyTxt.slice(0, 80));
   const pr = paid.headers.get("payment-required");
   check("live: PAYMENT-REQUIRED header present+decodable", !!pr && (() => { try { const j = JSON.parse(Buffer.from(pr, "base64").toString()); return j.x402Version === 2 && !!j.accepts && j.accepts[0].payTo === "0x2091125bFE4259b2CfA889165Beb6290d0Df5DeA"; } catch { return false; } })());
   // live refuses to settle: the /launch paid route must fail closed (500) without X402_PAY_TO
