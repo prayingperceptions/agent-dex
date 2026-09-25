@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
-// SimpleERC20.sol — minimal mintable ERC-20. Optionally mints a protocol fee to a
-// recipient at construction (0.5% launch fee), mirroring the proven agent-launch Token.
+// SimpleERC20.sol — minimal mintable ERC-20. Mints the FULL supply to the minter
+// (the Agent DEX), which then controls the exact launch split (1% deployer /
+// 0.5% protocol / 0.5% lottery / 98% float).
 pragma solidity ^0.8.20;
 
 contract SimpleERC20 {
@@ -15,18 +16,11 @@ contract SimpleERC20 {
 
     event Transfer(address indexed from, address indexed to, uint256 value);
 
-    constructor(string memory name_, string memory symbol_, uint256 supply_, address minter_, address feeTo_, uint256 feeBps_) {
+    constructor(string memory name_, string memory symbol_, uint256 supply_, address minter_) {
         name = name_; symbol = symbol_;
         totalSupply = supply_; minter = minter_;
-
-        uint256 fee = (supply_ * feeBps_) / 10000; // e.g. 50 bps == 0.5%
-        uint256 net = supply_ - fee;
-        balanceOf[minter_] = net;
-        if (feeTo_ != address(0) && fee > 0) {
-            balanceOf[feeTo_] = fee;               // protocol fee minted at construction
-            emit Transfer(address(0), feeTo_, fee);
-        }
-        emit Transfer(address(0), minter_, net);
+        balanceOf[minter_] = supply_;
+        emit Transfer(address(0), minter_, supply_);
     }
 
     function mint(address to, uint256 value) external {
