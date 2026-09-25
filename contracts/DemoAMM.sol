@@ -23,7 +23,13 @@ contract DemoAMM {
     uint256 public totalShares;
     uint256 public accFee;                     // accrued fee pool waiting to be claimed
 
-    event Swap(address indexed trader, uint256 tokenIn, uint256 quoteOut, uint256 feeToProtocol);
+    // ---- volume / analytics (CoinGecko-style) ----
+    uint256 public totalVolumeQuote;           // cumulative quote traded
+    uint256 public totalVolumeToken;           // cumulative token traded
+    uint256 public totalTrades;                // cumulative swaps
+    uint256 public lastTradeTimestamp;         // for 24h windowing by the /stats endpoint
+
+    event Swap(address indexed trader, uint256 tokenIn, uint256 quoteOut, uint256 feeToProtocol, uint256 timestamp);
     event LiquidityAdded(address indexed lp, uint256 tokenAmount, uint256 quoteAmount, uint256 shares);
 
     constructor(IERC20 token_, IERC20 quote_, address protocolFeeTo_, uint256 feeBps_) {
@@ -76,7 +82,11 @@ contract DemoAMM {
         _splitFee(fee); // fee = halves: protocol + LP pool (token units)
         reserveQuote = newQuote;
         reserveToken -= tokenOut;
-        emit Swap(msg.sender, quoteIn_, toBuyer, fee / 2);
+        totalVolumeQuote += quoteIn_;
+        totalVolumeToken += toBuyer;
+        totalTrades += 1;
+        lastTradeTimestamp = block.timestamp;
+        emit Swap(msg.sender, quoteIn_, toBuyer, toBuyer / 2, block.timestamp);
         return toBuyer;
     }
 
@@ -93,7 +103,11 @@ contract DemoAMM {
         _splitFeeQuote(fee); // quote units: half protocol, half LP pool
         reserveToken = newToken;
         reserveQuote -= quoteOut;
-        emit Swap(msg.sender, tokenIn_, toSeller, fee / 2);
+        totalVolumeQuote += quoteOut;
+        totalVolumeToken += tokenIn_;
+        totalTrades += 1;
+        lastTradeTimestamp = block.timestamp;
+        emit Swap(msg.sender, tokenIn_, toSeller, toSeller / 2, block.timestamp);
         return toSeller;
     }
 

@@ -119,6 +119,12 @@ contract AgentDexTest is Test {
         assertGt(usdc.balanceOf(PROTOCOL), protoQuoteBefore, "sell fee (quote) -> protocol");
         assertEq(dex.lottery().hasTraded(buyer), true, "buyer marked as trader");
         assertEq(dex.lottery().distinctTraders(), 1, "one distinct trader so far");
+        // on-chain volume counters tick with each swap (CoinGecko-style analytics)
+        (, DemoAMM pool, , , ) = dex.listings(address(t));
+        assertEq(pool.totalTrades(), 2, "two swaps recorded");
+        assertGt(pool.totalVolumeQuote(), 0, "quote volume accumulated");
+        assertGt(pool.totalVolumeToken(), 0, "token volume accumulated");
+        assertGt(pool.lastTradeTimestamp(), 0, "trade timestamp set");
     }
 
     // ---- fail-closed gate: a denying gate blocks even launch ----

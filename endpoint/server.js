@@ -10,6 +10,7 @@
 // payment header is settled (fail-closed; mock only on explicit PAYMENT_MODE=mock).
 import http from 'node:http';
 import { gatePayment } from './payments/x402.js';
+import { poolStats } from './stats.js';
 
 const PORT = parseInt(process.env.PORT || '8794', 10);
 
@@ -57,8 +58,13 @@ const server = http.createServer(async (req, res) => {
     if (method === 'GET' && path === '/health') {
       return send(res, 200, { ok: true, service: 'agent-dex', version: '0.1.0', chain: 'base' });
     }
+    // CoinGecko-style live on-chain analytics (free)
+    if (method === 'GET' && path === '/stats') {
+      const s = await poolStats();
+      return send(res, 200, s);
+    }
     if (method === 'GET' && path === '/') {
-      return send(res, 200, { service: 'agent-dex', endpoints: ['/health', '/fee/rate', '/launch', '/list', '/trade'] });
+      return send(res, 200, { service: 'agent-dex', endpoints: ['/health', '/fee/rate', '/stats', '/launch', '/list', '/trade'] });
     }
 
     // disclosed fee schedule — transparency first

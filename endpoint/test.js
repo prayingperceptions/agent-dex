@@ -26,6 +26,10 @@ try {
   const fee = await get("/fee/rate");
   check("fee schedule public", fee.status === 200 && fee.json.launch.percent === 0.5 && fee.json.trade.percent === 0.05 && fee.json.disclosed === true);
 
+  // live on-chain analytics (may be unpooled -> still 200 with honest fields)
+  const st = await get("/stats");
+  check("stats live + honest", st.status === 200 && st.json.ok === true && "pooled" in st.json && "volume24h" in st.json && "tvl" in st.json && "trades" in st.json, JSON.stringify(st.json).slice(0, 120));
+
   // ---- x402 gate on /launch: no payment header => 402 + PAYMENT-REQUIRED ----
   // (run a separate server instance in LIVE mode to assert fail-closed 402)
   const free = await post("/launch", { name: "Compute", symbol: "CPT", supply: 1000000 }, { "content-type": "application/json" });
