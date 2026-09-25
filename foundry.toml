@@ -3,3 +3,7 @@ src = "contracts"
 test = "test"
 out = "out"
 libs = ["/Users/cmpgfb/.openclaw/workspace-daily-bread/lib"]
+
+# Applies to tests too (renames the optimizer label for the whole build).
+optimizer = true
+optimizer_runs = 1

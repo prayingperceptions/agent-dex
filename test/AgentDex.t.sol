@@ -59,11 +59,14 @@ contract AgentDexTest is Test {
         uint256 base = SUPPLY / 200;                      // 0.5%
         assertEq(t.balanceOf(deployer), base * 2, "deployer 1%");
         assertEq(t.balanceOf(PROTOCOL), base, "protocol 0.5%");
-        assertEq(dex.escrow(address(t)), base, "lottery escrow 0.5% (held on DEX balance)");
-        // DEX balance = float (98%) + escrow (0.5%) = 98.5%; escrow is recorded separately
-        assertEq(t.balanceOf(address(dex)), SUPPLY - base * 3, "DEX holds float+escrow (98.5%)");
-        // ledger conservation (deployer + protocol + DEX-held = full supply)
-        assertEq(t.balanceOf(deployer) + t.balanceOf(PROTOCOL) + t.balanceOf(address(dex)), SUPPLY);
+        // escrow is recorded on the LotteryLedger and the 0.5% physically moved there
+        assertEq(dex.lottery().escrow(address(t)), base, "lottery escrow 0.5% (held on the lottery ledger)");
+        assertEq(t.balanceOf(address(dex.lottery())), base, "0.5% escrow physically on the ledger");
+        // DEX holds the 98% float (escrow moved off its balance)
+        assertEq(t.balanceOf(address(dex)), SUPPLY - base * 4, "DEX holds 98% float");
+        // full conservation: deployer + protocol + float + escrow = supply
+        assertEq(t.balanceOf(deployer) + t.balanceOf(PROTOCOL) + t.balanceOf(address(dex))
+            + t.balanceOf(address(dex.lottery())), SUPPLY);
     }
 
     // ---- dual quote: USDC default, WETH accepted ----
@@ -114,8 +117,8 @@ contract AgentDexTest is Test {
         vm.stopPrank();
         assertGt(q, 0, "quote back on sell");
         assertGt(usdc.balanceOf(PROTOCOL), protoQuoteBefore, "sell fee (quote) -> protocol");
-        assertEq(dex.hasTraded(buyer), true, "buyer marked as trader");
-        assertEq(dex.distinctTraders(), 1, "one distinct trader so far");
+        assertEq(dex.lottery().hasTraded(buyer), true, "buyer marked as trader");
+        assertEq(dex.lottery().distinctTraders(), 1, "one distinct trader so far");
     }
 
     // ---- fail-closed gate: a denying gate blocks even launch ----
@@ -145,20 +148,20 @@ contract AgentDexTest is Test {
             dex.enterDraw();
             vm.stopPrank();
         }
-        assertEq(dex.distinctTraders(), 100, "threshold reached");
-        assertEq(dex.candidateCount(), 100, "candidates registered");
+        assertEq(dex.lottery().distinctTraders(), 100, "threshold reached");
+        assertEq(dex.lottery().candidateCount(), 100, "candidates registered");
 
         vm.startPrank(PROTOCOL);
         address winner2 = dex.draw(address(t));
         vm.stopPrank();
         // winner is one of the traders
-        assertTrue(dex.hasTraded(winner2), "winner is a trader");
-        assertEq(dex.escrow(address(t)), 0, "escrow released");
+        assertTrue(dex.lottery().hasTraded(winner2), "winner is a trader");
+        assertEq(dex.lottery().escrow(address(t)), 0, "escrow released");
         // the draw took the whole 0.5% escrow out of the DEX and gave it to the winner;
         // winner already held their own bought tokens, so their balance now holds >= escrow
         assertGt(t.balanceOf(winner2), SUPPLY / 200 - 1, "winner received the 0.5% escrow on top of own tokens");
         // and the DEX no longer holds any escrow (confirmed released above)
-        assertEq(dex.drawDone(), true);
+        assertEq(dex.lottery().drawDone(), true);
     }
 
     function test_lottery_reverts_below_threshold() public {
@@ -169,7 +172,7 @@ contract AgentDexTest is Test {
         vm.startPrank(a); usdc.approve(address(dex), type(uint256).max);
         dex.buy(address(t), 10, a);
         vm.stopPrank();
-        vm.expectRevert("DEX: not enough traders");
+        vm.expectRevert("LOT: not enough traders");
         vm.startPrank(PROTOCOL);
         dex.draw(address(t));
         vm.stopPrank();
