@@ -23,6 +23,7 @@ function send(res, status, obj, addHeaders = {}) {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
     'Access-Control-Allow-Headers': 'content-type',
+    'Cache-Control': 'public, max-age=0, stale-while-revalidate=0',
     ...addHeaders
   });
   res.end(JSON.stringify(obj, null, 2));
