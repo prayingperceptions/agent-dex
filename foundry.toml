@@ -1,0 +1,5 @@
+[profile.default]
+src = "contracts"
+test = "test"
+out = "out"
+libs = ["/Users/cmpgfb/.openclaw/workspace-daily-bread/lib"]

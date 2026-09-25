@@ -1,0 +1,8 @@
+{
+  "name": "agent-dex",
+  "version": "0.1.0",
+  "description": "Agent DEX — agent-native token exchange on Base: launch (0.5% fee), auto-pool liquidity, trade with identity/permission/safety gates. Foundry-tested.",
+  "type": "module",
+  "scripts": { "test": "forge test", "test:contracts": "forge test" },
+  "license": "MIT"
+}
