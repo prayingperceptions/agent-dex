@@ -23,6 +23,8 @@ TRADE_USDC_ATOMIC=1000000   # $1.00 USDC -> a small CPT buy
 [ -f "$KEYFILE" ] || { echo "ERROR: no key at $KEYFILE. Write your 64-hex key there first."; exit 1; }
 
 KEY="$(cat "$KEYFILE" | tr -d '[:space:]')"
+KEY="${KEY#0x}"          # allow 0x-prefixed keys
+KEY="${KEY#0X}"
 [ "${#KEY}" -ge 64 ] || { echo "ERROR: key looks too short. It must be a 64-hex private key."; exit 1; }
 
 echo "== deriving signer address (key never printed)..."
