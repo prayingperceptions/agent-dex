@@ -40,7 +40,7 @@ export async function poolStats() {
   const word = (i) => h.slice(i * 64, (i + 1) * 64);
   const active = BigInt(word(4) || '0') > 0n;
   const ammRaw = word(1) || '';
-  const amm = (active && BigInt(ammRaw) > 0n) ? addr(ammRaw) : null;
+  const amm = (active && BigInt('0x' + (ammRaw || '0')) > 0n) ? addr(ammRaw) : null;
 
   if (!active || !amm) {
     return {
