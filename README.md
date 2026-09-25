@@ -94,8 +94,12 @@ Live 24/7 analytics: `https://agent-dex-eight.vercel.app/stats`.
 
 ## Availability note (honest)
 
-Compute/CPT lives only in this venue today — it is **not** auto-populated onto Aerodrome /
-Uniswap / other Base DEXes; that needs a v2 wrapper or a separate liquidity provision there.
+**Compute/CPT is live, pooled, and tradable now** — the USDC pool is open on Base
+(3,313,350 USDC / 980,000 CPT, 0.05% fee; live state at `/stats`).
+
+It is **not** auto-populated onto *other* public DEXes (Aerodrome / Uniswap / other Base
+venues) — bringing CPT to those needs a v2 wrapper or a separate liquidity provision
+there. Trade happens in this venue today; cross-listing is on the roadmap.
 
 ## Lottery
 
