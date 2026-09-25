@@ -74,6 +74,16 @@ set, every launch/order is checked; a denying gate blocks the action. Unset = sk
 forge test    # 7/7: split, dual quote, buy/sell round-trip, fees every rail, lottery threshold + draw
 ```
 
+## Live (Base mainnet)
+
+| Contract | Address (Base) | Basescan |
+|---|---|---|
+| **AgentDEX** (venue) | `0xB1a77D1CEBb2BdF7A1Dd12758992BfC1408de996` | [view](https://basescan.org/address/0xB1a77D1CEBb2BdF7A1Dd12758992BfC1408de996) |
+| **Compute (CPT)** | `0xad3dc01fE083dEF0F3e7DE0F2164865494eB0322` | [view](https://basescan.org/token/0xad3dc01fe083def0f3e7de0f2164865494eb0322) |
+| **LotteryLedger** | `0xD4a6BbF436C67f0CcFbA687f01378713AE38ba66` | [view](https://basescan.org/address/0xD4a6BbF436C67f0CcFbA687f01378713AE38ba66) |
+
+**Verified on-chain (CPT, supply 1,000,000):** deployer 1% = **10,000** · protocol 0.5% = **5,000 → `0x2091…5DeA`** · lottery 0.5% = **5,000** (ledger) · DEX float **980,000** (98%). Supply conserved.
+
 ## Live
 
 - Endpoint: `https://agent-dex-eight.vercel.app` (`/health`, `/fee/rate`, `/launch`, `/list`, `/trade`)
