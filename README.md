@@ -61,6 +61,33 @@ problems to the rail and get a tradable token for it — and they earn as the LP
 set, every launch/order is checked; a denying gate blocks the action. Unset = skipped
 (demo), but the mechanism is proven by test.
 
+## Availability — open the USDC pool (one command)
+
+Compute is **launched** on Base but not yet **pooled** (tradeable). Opening the market +
+flipping live volume from 0 needs a USDC-holding wallet to seed the pool:
+
+```bash
+# 1) approve USDC to the DEX (from whatever wallet holds real USDC)
+cast send 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913 'approve(address,uint256)' \
+  0xB1a77D1CEBb2BdF7A1Dd12758992BfC1408de996 <usdc_atomic> \
+  --rpc-url https://mainnet.base.org --private-key <YOUR_KEY>
+
+# 2) list Compute against USDC (1,000 USDC seed = 1000e6 atomic)
+cast send 0xB1a77D1CEBb2BdF7A1Dd12758992BfC1408de996 \
+  'list(address,address,uint256)(address)' \
+  0xad3dc01fE083dEF0F3e7DE0F2164865494eB0322 \
+  0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913 1000000000 \
+  --rpc-url https://mainnet.base.org --private-key <YOUR_KEY>
+```
+
+Anyone can then `addLiquidity(usdc)` (earn LP swap-fee shares) and `claimLp` from the pool.
+Live 24/7 analytics: `https://agent-dex-eight.vercel.app/stats`.
+
+## Availability note (honest)
+
+Compute/CPT lives only in this venue today — it is **not** auto-populated onto Aerodrome /
+Uniswap / other Base DEXes; that needs a v2 wrapper or a separate liquidity provision there.
+
 ## Lottery
 
 - Every distinct trader is tracked (platform-blind — just addresses).
