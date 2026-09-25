@@ -5,6 +5,7 @@ pragma solidity ^0.8.20;
 
 import {Test} from "forge-std/Test.sol";
 import {SimpleERC20} from "../contracts/SimpleERC20.sol";
+import {IERC20} from "../contracts/IERC20.sol";
 import {DemoAMM} from "../contracts/DemoAMM.sol";
 import {AgentDEX} from "../contracts/AgentDEX.sol";
 
@@ -23,11 +24,11 @@ contract AgentDexTest is Test {
         vm.startPrank(deployer);
         usdc = new SimpleERC20("USDC","USDC", 50_000_000 ether, deployer);
         weth = new SimpleERC20("WETH","WETH", 1_000_000 ether, deployer);
-        dex  = new AgentDEX(usdc, PROTOCOL, 50, 50, 5);
+        dex  = new AgentDEX(IERC20(address(usdc)), PROTOCOL, 50, 50, 5);
         vm.stopPrank();
         // accept another quote (WETH/ETH-like) as PROTOCOL — acceptQuote is protocol-only
         vm.startPrank(PROTOCOL);
-        dex.acceptQuote(weth, true);
+        dex.acceptQuote(IERC20(address(weth)), true);
         vm.stopPrank();
 
         // fund a handful of extra addresses for trading + the lottery threshold
@@ -48,7 +49,7 @@ contract AgentDexTest is Test {
     function _list(SimpleERC20 t) internal {
         vm.startPrank(deployer);
         usdc.approve(address(dex), type(uint256).max);
-        dex.list(address(t), usdc, 100_000 ether);
+        dex.list(address(t), IERC20(address(usdc)), 100_000 ether);
         vm.stopPrank();
     }
 
@@ -76,7 +77,7 @@ contract AgentDexTest is Test {
         SimpleERC20 t = _launch();
         vm.startPrank(deployer);
         weth.approve(address(dex), type(uint256).max);
-        address amm = dex.list(address(t), weth, 10_000 ether); // list against ETH
+        address amm = dex.list(address(t), IERC20(address(weth)), 10_000 ether); // list against ETH
         vm.stopPrank();
         assertTrue(amm != address(0));
         DemoAMM pool = DemoAMM(amm);

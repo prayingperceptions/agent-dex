@@ -6,11 +6,11 @@
 // replaced by a real Aerodrome / Uniswap-v3 wrapper later — same surface.
 pragma solidity ^0.8.20;
 
-import { SimpleERC20 } from "./SimpleERC20.sol";
+import { IERC20 } from "./IERC20.sol";
 
 contract DemoAMM {
-    SimpleERC20 public immutable token;
-    SimpleERC20 public immutable quote;        // USDC or ETH on Base
+    IERC20 public immutable token;
+    IERC20 public immutable quote;        // USDC or ETH on Base (REAL token, via IERC20)
     address public immutable protocolFeeTo;
     uint256 public immutable feeBps;           // per swap (e.g. 5 bps == 0.05%)
 
@@ -26,7 +26,7 @@ contract DemoAMM {
     event Swap(address indexed trader, uint256 tokenIn, uint256 quoteOut, uint256 feeToProtocol);
     event LiquidityAdded(address indexed lp, uint256 tokenAmount, uint256 quoteAmount, uint256 shares);
 
-    constructor(SimpleERC20 token_, SimpleERC20 quote_, address protocolFeeTo_, uint256 feeBps_) {
+    constructor(IERC20 token_, IERC20 quote_, address protocolFeeTo_, uint256 feeBps_) {
         token = token_; quote = quote_; protocolFeeTo = protocolFeeTo_;
         require(feeBps_ <= 500, "AMM: feeBps range");
         feeBps = feeBps_;

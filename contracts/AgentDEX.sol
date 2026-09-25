@@ -8,6 +8,7 @@
 pragma solidity ^0.8.20;
 
 import { SimpleERC20 } from "./SimpleERC20.sol";
+import { IERC20 } from "./IERC20.sol";
 import { DemoAMM } from "./DemoAMM.sol";
 
 interface IGate {
@@ -26,7 +27,7 @@ contract AgentDEX {
 
     // trusted quote assets (USDC or ETH on Base) — pick at list(), like Uniswap pair choice
     mapping(address => bool) public acceptedQuotes;
-    SimpleERC20 public defaultQuote;
+    IERC20 public defaultQuote;
     address[] public quoteList;
 
     // agent gates (address(0) = skipped in demo; fail-closed when set)
@@ -38,7 +39,7 @@ contract AgentDEX {
         SimpleERC20 token;
         DemoAMM amm;
         address deployer;
-        SimpleERC20 quote;
+        IERC20 quote;
         bool active;
     }
     mapping(address => Listing) public listings;
@@ -58,7 +59,7 @@ contract AgentDEX {
     event Trades(address indexed trader, address indexed token, bool isBuy, uint256 amount);
     event LotteryDrawn(address indexed token, address indexed winner, uint256 amount);
 
-    constructor(SimpleERC20 defaultQuote_, address protocolTo_,
+    constructor(IERC20 defaultQuote_, address protocolTo_,
                 uint256 launchBps_, uint256 listingBps_, uint256 tradeBps_) {
         protocolTo = protocolTo_;
         launchBps = launchBps_; listingBps = listingBps_; tradeBps = tradeBps_;
@@ -103,7 +104,7 @@ contract AgentDEX {
     }
 
     // ---- accept a quote asset (USDC or ETH on Base); protocol-only ----
-    function acceptQuote(SimpleERC20 q_, bool on_) external {
+    function acceptQuote(IERC20 q_, bool on_) external {
         require(msg.sender == protocolTo, "DEX: only protocol");
         if (on_ && !acceptedQuotes[address(q_)]) { acceptedQuotes[address(q_)] = true; quoteList.push(address(q_)); }
         if (!on_) acceptedQuotes[address(q_)] = false;
@@ -115,7 +116,7 @@ contract AgentDEX {
     function candidateCount() external view returns (uint256) { return candidates.length; }
 
     // ---- list: open a pooled market against a chosen quote (USDC or ETH). ----
-    function list(address tokenAddr, SimpleERC20 quoteToken, uint256 seedQuote)
+    function list(address tokenAddr, IERC20 quoteToken, uint256 seedQuote)
         external returns (address ammAddr)
     {
         Listing storage l = listings[tokenAddr];
@@ -124,7 +125,7 @@ contract AgentDEX {
         require(acceptedQuotes[address(quoteToken)], "DEX: quote not accepted");
         l.quote = quoteToken;
 
-        DemoAMM amm = new DemoAMM(l.token, quoteToken, protocolTo, tradeBps);
+        DemoAMM amm = new DemoAMM(IERC20(address(l.token)), quoteToken, protocolTo, tradeBps);
         l.amm = amm;
 
         // 1) seed quote from the seeder; 0.5% listing fee -> protocol, rest pooled
@@ -152,7 +153,7 @@ contract AgentDEX {
         require(_permitted(trader, tokenAddr, "buy"), "DEX: not permitted");
         Listing storage l = listings[tokenAddr];
         require(l.active && address(l.amm) != address(0), "DEX: not listed");
-        SimpleERC20 qt = l.quote;
+        IERC20 qt = l.quote;
         qt.transferFrom(trader, address(this), quoteIn);
         qt.approve(address(l.amm), quoteIn);
         uint256 out = l.amm.buy(quoteIn);
@@ -167,7 +168,7 @@ contract AgentDEX {
         require(_permitted(trader, tokenAddr, "sell"), "DEX: not permitted");
         Listing storage l = listings[tokenAddr];
         require(l.active && address(l.amm) != address(0), "DEX: not listed");
-        SimpleERC20 qt = l.quote;
+        IERC20 qt = l.quote;
         l.token.transferFrom(trader, address(this), tokenIn);
         l.token.approve(address(l.amm), tokenIn);
         uint256 out = l.amm.sell(tokenIn);
