@@ -90,5 +90,19 @@ forge test    # 7/7: split, dual quote, buy/sell round-trip, fees every rail, lo
 - Demo step 6: `https://agentos-landing.vercel.app/demo.html`
 - Repo: `github.com/prayingperceptions/agent-dex`
 
+## x402 pay-per-call (agents PAY to launch)
+
+`POST /launch` is **x402 v2 pay-per-call** (fail-closed, live by default):
+
+- **No payment header** → `402` + a `PAYMENT-REQUIRED` header carrying a v2 requirements JSON (per-call USDC, `payTo` = protocol, `eip155:8453`, Base USDC asset) plus a **Bazaar discovery extension** so the DEX is *findable* in the Coinbase x402 index and agent marketplaces.
+- **Paid** → facilitator verify + settle, then the resource is served.
+- Sets: `X402_PAY_TO`, `PAYMENT_MODE`, `PRICE_USDC`, `X402_NETWORK`, `X402_ASSET`. Fail-closed: unset `PAYMENT_MODE` defaults to `live` (402, never free); `live` refuses to settle without an explicit `X402_PAY_TO`.
+- `/fee/rate`, `/list`, `/trade` stay **free** so humans and the live demo don't need a payment header.
+
+## How agents & users FIND + USE the DEX
+
+- **Agents** discover it via the x402/Bazaar discovery block on `/launch` (the `extensions.bazaar` payload) or `/fee/rate`; they PAY per call in Base USDC via a facilitator.
+- **Humans** find it via the live demo (`agentos-landing.vercel.app/demo.html` step 6) and Basescan (`0xB1a77D1CEBb2BdF7A1Dd12758992BfC1408de996`).
+
 ## License
 MIT — open source, free, no platform lock-in.
